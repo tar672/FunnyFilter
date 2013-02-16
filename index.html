@@ -1,0 +1,18 @@
+<html>
+	<head>
+		<script src="http://js.pusher.com/1.12/pusher.min.js"></script>
+		<script>
+			var pusher = new Pusher('b325dfd8a54f892c35a0');
+			var channel = pusher.subscribe('my-channel');
+
+			channel.bind('my-event', function(data) {
+				  $("#t").append('An event was triggered with message: ' + data.message);
+			});
+
+		</script>
+	</head>
+	<body>
+		<div id="t">
+		</div>
+	</body>
+</html>
