@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+		<title>Funny Filter</title>
+
+ 		<link rel="stylesheet" href="style.css">
+
+		<script type="text/javascript" src="/_ah/channel/jsapi"></script>
+  		<script type="text/javascript" src="http://code.jquery.com/jquery.js"></script>
+		<script type="text/javascript" src="isotope.js"></script>
+
+		<script type="text/javascript">
+		
+		$(document).ready(function(){
+			var $container = $('#content');
+			$container.isotope({
+				filter: '*',
+				animationOptions: {
+     				duration: 750,
+     				easing: 'linear',
+     				queue: false,
+   				}
+			});
+
+			$('#nav a').click(function(){
+  				var selector = $(this).attr('data-filter');
+    			$container.isotope({ 
+					filter: selector,
+					animationOptions: {
+    					duration: 750,
+     					easing: 'linear', 
+     					queue: false,
+  					}
+  				});
+  				return false;
+			});
+
+		});
+		</script>
+
+	</head>
+
+	<body>
+		<h1>Welcome to Funny Filter!</h1>
+
+    	<div id="container"></div>
+
+
+  		<script>
+
+    	/* Token is global variable */
+    	var token;
+
+    	/* Get channel and set token to return value using callback */
+   		$.get("/createChannel", function(data) {
+      	token = data;
+      	openChannel();
+    	});
+
+    	function onTweet(tweet) {
+      	console.log(tweet.data);
+
+      
+      	var $newItem = $('<div class="tweet"><h3>' + tweet.data +'</h3></div>');
+
+      	$("#container").prepend( $newItem)
+
+      	/* Append tweet to list on projector */
+    
+     	/* $("#container").prepend('<div class="tweet"><h3>' + tweet.data +'</h3></div>'); */
+
+    	}
+
+    	function onOpen(event) {
+      		console.log("Channel opened");
+    	}
+
+    	function openChannel() {
+      		channel = new goog.appengine.Channel(token);
+      		socket = channel.open();
+      
+      		/* Bind callback functions */
+      		socket.onmessage = onTweet;
+      		socket.onopen = onOpen;
+    	}
+  		</script>
+	</body>
+
+</html>
