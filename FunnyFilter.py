@@ -37,6 +37,15 @@ auth = OAuthHandler(config.consumer_key, config.consumer_secret)
 auth.set_access_token(config.access_token, config.access_token_secret)
 stream = Stream(auth, l)
 
+#Returns false if tweet contains a banned term
+def filterTweets:
+	bannedTerms = re.compile('.*@|.*lol$|.* ur ')
+	m = p.match(data)
+	if m: 
+		return False
+	else:
+		return True
+
 terms = ["dontremoveme", "funny"]
 stream.filter(async=True, track=terms)
 
