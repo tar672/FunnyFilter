@@ -41,7 +41,7 @@ stream = Stream(auth, l)
 #Returns false if tweet contains a banned term
 def filterTweets(data):
 	bannedTerms = re.compile('.*@|.*lol$|.* ur ')
-	m = data.match(data)
+	m = bannedTerms.match(data)
 	if m: 
 		print "filtered"
 		return False
