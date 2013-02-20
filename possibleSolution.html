@@ -1,0 +1,53 @@
+<html>
+	<head>
+		<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+		<script src="http://js.pusher.com/1.12/pusher.min.js"></script>
+		<script>
+			$(document).ready(function(){
+				//Creates a pusher object using the public API key.
+				//This pusher object is used for interacting with the API.
+				var pusher = new Pusher('b325dfd8a54f892c35a0');
+				
+				//Call the subscribe method of the pusher object to create a channel object.
+				var allTweetsChannel = pusher.subscribe('all-tweets');
+
+				//Uses jquery to select the ul element with id 'l'
+				l = $('#l');
+
+				//The tweet callback function parses JSON data and prepends the text of the tweet to a ul element wrapped in li tags
+				function tweetCallback(data) {
+
+					//Parses the JSON string into tweetObject
+					var tweetObject = JSON.parse(data);
+
+					//saves the text of the tweet in tweetText
+					var tweetText = tweetObject.text;
+
+					//prepends the HTML with the tweet to the list element
+					l.prepend("<li>" + tweetText + "</li>");
+				}
+
+				//Binds a 'tweet' event arriving on the pusher channel to the tweetCallback function
+				//ie. every time a tweet arrives the tweetCallback function is called and passed the tweet
+				allTweetsChannel.bind("tweet", tweetCallback);
+
+				//The sendTweet function sends a tweet to the funny filter server via a POST request
+				//This function is a callback for the user clicking a tweet (the event)
+				function sendTweet(event){
+
+					//pulls the text out of the element that was clicked
+					var tweetText = event.target.innerText;
+
+					//Sends a post request with the tweet text as the body
+					$.post("http://www.funny-filter.appspot.com/tweet", {"tweet":tweetText});
+				}
+				//binds the user clicking on any li element to the sendTweet function
+				$(document).on('click','li', sendTweet);
+			});
+		</script>
+	</head>
+	<body>
+		<h1>FunnyFilter</h1>
+		<ul id="l"></ul>
+	</body>
+</html
