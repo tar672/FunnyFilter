@@ -1,77 +1,56 @@
-import time
-import threading
 import json
-
+import time
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
-
 import pusher
-
 import config
 
-from flask import Flask, request
-
+send = False
+lastSent = 0.0
+notSentTot = 0
+notSentThisTime = 0
 class TweetListener(StreamListener):
 	def on_data(self, data):
-		global terms
-		print "tweet!"
-		for t in terms:
-			if(t not in data):
-				continue
-
-			if(len(terms[t]['cache'])+len(data) < 900):
-				if(terms[t]['cache'] != ""):
-					data = "," + data
-				terms[t]['cache'] += data
-
-			if(terms[t]['time'] < time.time()-3):
-				print "sent!"
-				p['all-tweets'].trigger(t, "[" + terms[t]['cache'] + data + "]")
-
-				terms[t]['time'] = time.time()
-				terms[t]['cache'] = ""
-
+		global lastSent, notSentTot, notSentThisTime
+		if(send and lastSent < time.time() - 1):
+			print "1 sent, " + str(notSentThisTime) + " not sent this time and " + str(notSentTot) + " not sent in total"
+			p['all-tweets'].trigger("tweet", data)
+			lastSent = time.time()
+			notSentThisTime = 0
+		else:
+			notSentTot += 1
+			notSentThisTime += 1
 		return True
 
 	def on_error(self, status):
 		print status
 
-new = True
-def getStream():
-	global new
-	stream = Stream(auth, l)
-	while(1):
-		if(new):
-			print "update stream"
-			stream.disconnect()
-			t = threading.Thread(target=stream.filter, kwargs={'track':terms})
-			t.daemon = True
-			t.start()
-			new = False
-		time.sleep(2)
+def updateStream():
+	stream.disconnect()
+	stream.filter(async=True, track=terms)
 
 p = pusher.Pusher(app_id=config.app_id, key=config.app_key, secret=config.app_secret)
-terms = {"maithu":{"time":0, "cache":""}}
 
 l = TweetListener()
 auth = OAuthHandler(config.consumer_key, config.consumer_secret)
 auth.set_access_token(config.access_token, config.access_token_secret)
+stream = Stream(auth, l)
 
-t = threading.Thread(target=getStream)
-t.daemon = True
-t.start()
+terms = ["dontremoveme", "funny"]
+stream.filter(async=True, track=terms)
 
-app = Flask(__name__)
-app.debug = True
-
-@app.route('/addTerm')
-def addTerm():
-	global new, terms
-	print "addTerm: " + request.args.get("term")
-	terms[request.args.get("term")] = {"time":0, "cache":""}
-	new = True
-	return "yay"
-	
-if __name__ == '__main__':
-	app.run(host='0.0.0.0', port=8000, use_reloader=False)
+while(True):
+	i = raw_input("[q]uit, [t]oggle sending, [a:]dd term <term>, [r:]emove term <term>\n")
+	if(i == "q"):
+		stream.disconnect()
+		exit(0)
+	if(i == "t"):
+		send = not send
+		print "sending is: " + str(send)
+	if(i[0] == "a"):
+		terms.append(i[2:])
+		updateStream()
+	if(i[0] == "r"):
+		terms.remove(i[2:])
+		updateStream()
