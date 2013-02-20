@@ -30,6 +30,7 @@ For binding a callback function to the click event in jQuery
 
 For making a post request using jQuery
 * http://api.jquery.com/jQuery.post/
+* This will cause a cross-domain error but you can ignore it :) (Not exactly best practice but hey)
 
 Explanation of callbacks
 * http://recurial.com/programming/understanding-callback-functions-in-javascript/
